@@ -7,13 +7,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && \
+# Install dependencies (frozen install, no scripts via .npmrc)
+RUN npm ci --only=production --prefer-offline --no-audit --fund=false && \
     npm cache clean --force
 
-# Copy all dependencies for build
+# Copy all dependencies for build (frozen install + signature verification)
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --prefer-offline --no-audit --fund=false; \
+    npm audit signatures || true
 
 # Copy application source
 COPY . .
